@@ -3,14 +3,16 @@ import { create } from 'zustand'
 const apiBase = '/api'
 
 async function fetchAPI(endpoint, options = {}) {
+  const { headers: optionHeaders, ...restOptions } = options
+  
   let response
   try {
     response = await fetch(`${apiBase}${endpoint}`, {
+      ...restOptions,
       headers: {
         'Content-Type': 'application/json',
-        ...options.headers,
+        ...optionHeaders,
       },
-      ...options,
     })
   } catch (networkError) {
     throw new Error('网络连接失败，请检查服务器是否启动')

@@ -47,6 +47,7 @@ function Events() {
       setFormData({ event_name: '', event_year: new Date().getFullYear(), start_date: '', end_date: '' })
     } catch (error) {
       console.error('保存赛事失败:', error)
+      alert('保存赛事失败: ' + error.message)
     } finally {
       setIsSubmitting(false)
     }
