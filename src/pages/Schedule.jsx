@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useStore } from '../store/useStore'
+import ConfirmDialog from '../components/ConfirmDialog'
 
 function Schedule() {
   const { currentEvent, teams, teamMatches, fetchTeams, fetchTeamMatches, generateBracket, generateNextRound, createTeamMatch, updateTeamMatch, deleteTeamMatch } = useStore()
@@ -13,6 +14,7 @@ function Schedule() {
     venue: '',
   })
   const [message, setMessage] = useState({ type: '', text: '' })
+  const [deleteConfirm, setDeleteConfirm] = useState({ isOpen: false, type: '', id: null, name: '' })
   
   const teamASelectRef = useRef(null)
 
@@ -41,9 +43,8 @@ function Schedule() {
       return
     }
     if (teamMatches.length > 0) {
-      for (const match of teamMatches) {
-        await deleteTeamMatch(match.team_match_id)
-      }
+      setDeleteConfirm({ isOpen: true, type: 'regenerate', id: null, name: '' })
+      return
     }
     try {
       await generateBracket(currentEvent.event_id)
@@ -63,15 +64,12 @@ function Schedule() {
     }
   }
 
-  const handleClearBracket = async () => {
+  const handleClearBracketClick = () => {
     if (teamMatches.length === 0) {
       showMessage('error', '暂无对阵表')
       return
     }
-    for (const match of teamMatches) {
-      await deleteTeamMatch(match.team_match_id)
-    }
-    showMessage('success', '对阵表已清除')
+    setDeleteConfirm({ isOpen: true, type: 'clear', id: null, name: '' })
   }
 
   const handleAddMatch = () => {
@@ -116,23 +114,47 @@ function Schedule() {
     }
   }
 
-  const handleDelete = async (id) => {
-    await deleteTeamMatch(id)
-    showMessage('success', '比赛已删除')
+  const handleDeleteClick = (match) => {
+    const matchName = `${match.team_a_name} vs ${match.team_b_name || '轮空'}`
+    setDeleteConfirm({ isOpen: true, type: 'match', id: match.team_match_id, name: matchName })
+  }
+
+  const handleDeleteConfirm = async () => {
+    if (deleteConfirm.type === 'match') {
+      await deleteTeamMatch(deleteConfirm.id)
+      showMessage('success', '比赛已删除')
+    } else if (deleteConfirm.type === 'clear') {
+      for (const match of teamMatches) {
+        await deleteTeamMatch(match.team_match_id)
+      }
+      showMessage('success', '对阵表已清除')
+    } else if (deleteConfirm.type === 'regenerate') {
+      for (const match of teamMatches) {
+        await deleteTeamMatch(match.team_match_id)
+      }
+      await generateBracket(currentEvent.event_id)
+      showMessage('success', '对阵表已重新生成！')
+    }
+    setDeleteConfirm({ isOpen: false, type: '', id: null, name: '' })
   }
 
   const getStatusBadge = (status) => {
     const colors = {
-      '未开始': 'bg-gray-100 text-gray-800',
-      '进行中': 'bg-green-100 text-green-800',
-      '已结束': 'bg-blue-100 text-blue-800',
+      '未开始': 'bg-slate-500/20 text-slate-400 border border-slate-500/30',
+      '进行中': 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30',
+      '已结束': 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/30',
     }
-    return colors[status] || 'bg-gray-100 text-gray-800'
+    return colors[status] || 'bg-slate-500/20 text-slate-400 border border-slate-500/30'
   }
 
   const getRoundName = (round) => {
     const names = { 1: '第一轮', 2: '第二轮', 3: '半决赛', 4: '决赛' }
     return names[round] || `第${round}轮`
+  }
+
+  const getRoundIcon = (round) => {
+    const icons = { 1: '1️⃣', 2: '2️⃣', 3: '⚔️', 4: '🏆' }
+    return icons[round] || '🎯'
   }
 
   const groupedMatches = teamMatches.reduce((acc, match) => {
@@ -150,48 +172,58 @@ function Schedule() {
 
   if (!currentEvent) {
     return (
-      <div className="card text-center py-12">
-        <p className="text-gray-500">请先选择或创建一个赛事</p>
+      <div className="card text-center py-12 animate-fade-in">
+        <div className="text-4xl mb-3">📅</div>
+        <p className="text-slate-400">请先选择或创建一个赛事</p>
       </div>
     )
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 animate-fade-in">
       {message.text && (
-        <div className={`p-3 rounded-lg ${message.type === 'success' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
+        <div className={`p-3 rounded-lg ${message.type === 'success' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-red-500/20 text-red-400 border border-red-500/30'}`}>
           {message.type === 'success' ? '✓ ' : '✕ '}{message.text}
         </div>
       )}
-      <div className="flex items-center justify-between flex-wrap gap-2">
-        <h2 className="text-2xl font-bold text-gray-800">赛程安排</h2>
-        <div className="flex gap-2">
+      
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h2 className="text-xl sm:text-2xl font-bold text-slate-100">赛程安排</h2>
+            <p className="text-xs sm:text-sm text-slate-400 mt-1">管理比赛对阵和时间安排</p>
+          </div>
+        </div>
+        
+        <div className="flex flex-wrap gap-2">
           <button onClick={handleAddMatch} className="btn btn-secondary">
             + 手动添加
           </button>
           <button onClick={handleGenerateBracket} className="btn btn-primary">
-            自动生成对阵表
+            🎯 自动生成对阵表
           </button>
           {canGenerateNextRound && (
             <button onClick={handleGenerateNextRound} className="btn btn-primary">
-              生成下一轮
+              ⏭️ 生成下一轮
             </button>
           )}
           {teamMatches.length > 0 && (
-            <button onClick={handleClearBracket} className="btn btn-danger">
-              清除对阵表
+            <button onClick={handleClearBracketClick} className="btn btn-danger">
+              🗑️ 清除对阵表
             </button>
           )}
         </div>
       </div>
 
       {showForm && (
-        <div className="card">
-          <h3 className="text-lg font-semibold mb-4">{editingMatch ? '编辑比赛' : '手动添加比赛'}</h3>
+        <div className="card animate-fade-in">
+          <h3 className="text-base sm:text-lg font-semibold text-slate-200 mb-4">
+            {editingMatch ? '编辑比赛' : '手动添加比赛'}
+          </h3>
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">轮次</label>
+                <label className="block text-xs sm:text-sm font-medium text-slate-300 mb-1.5">轮次</label>
                 <select
                   value={formData.round_number}
                   onChange={(e) => setFormData({ ...formData, round_number: parseInt(e.target.value) })}
@@ -204,7 +236,7 @@ function Schedule() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">队伍A *</label>
+                <label className="block text-xs sm:text-sm font-medium text-slate-300 mb-1.5">队伍A *</label>
                 <select
                   ref={teamASelectRef}
                   value={formData.team_a_id}
@@ -219,7 +251,7 @@ function Schedule() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">队伍B</label>
+                <label className="block text-xs sm:text-sm font-medium text-slate-300 mb-1.5">队伍B</label>
                 <select
                   value={formData.team_b_id}
                   onChange={(e) => setFormData({ ...formData, team_b_id: e.target.value })}
@@ -232,7 +264,7 @@ function Schedule() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">比赛时间</label>
+                <label className="block text-xs sm:text-sm font-medium text-slate-300 mb-1.5">比赛时间</label>
                 <input
                   type="datetime-local"
                   value={formData.match_time}
@@ -241,7 +273,7 @@ function Schedule() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">场地</label>
+                <label className="block text-xs sm:text-sm font-medium text-slate-300 mb-1.5">场地</label>
                 <input
                   type="text"
                   value={formData.venue}
@@ -251,9 +283,9 @@ function Schedule() {
                 />
               </div>
             </div>
-            <div className="flex gap-2">
-              <button type="submit" className="btn btn-primary">保存</button>
-              <button type="button" onClick={() => setShowForm(false)} className="btn btn-secondary">取消</button>
+            <div className="flex gap-2 pt-2">
+              <button type="submit" className="btn btn-primary flex-1 sm:flex-none">保存</button>
+              <button type="button" onClick={() => setShowForm(false)} className="btn btn-secondary flex-1 sm:flex-none">取消</button>
             </div>
           </form>
         </div>
@@ -261,63 +293,71 @@ function Schedule() {
 
       {teamMatches.length === 0 ? (
         <div className="card text-center py-12">
-          <p className="text-gray-500 mb-4">暂无赛程安排</p>
-          <p className="text-sm text-gray-400">请先添加队伍，然后点击"自动生成对阵表"或"手动添加"比赛</p>
+          <div className="text-4xl mb-3">📅</div>
+          <p className="text-slate-400 mb-2">暂无赛程安排</p>
+          <p className="text-xs text-slate-500">请先添加队伍，然后点击"自动生成对阵表"</p>
         </div>
       ) : (
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
           {Object.entries(groupedMatches).map(([round, matches]) => (
             <div key={round} className="card">
-              <h3 className="text-lg font-semibold mb-4">{getRoundName(Number(round))}</h3>
+              <h3 className="text-base sm:text-lg font-semibold text-slate-200 mb-4 flex items-center gap-2">
+                <span>{getRoundIcon(Number(round))}</span>
+                {getRoundName(Number(round))}
+              </h3>
               <div className="space-y-3">
                 {matches.map(match => {
                   const isBye = !match.team_b_id
                   return (
-                    <div key={match.team_match_id} className={`p-4 rounded-lg ${isBye ? 'bg-green-50 border border-green-200' : 'bg-gray-50'}`}>
-                      <div className="flex items-center justify-between flex-wrap gap-2">
-                        <div className="flex items-center gap-4">
-                          <div className="text-center min-w-[100px]">
-                            <div className="font-medium">{match.team_a_name || '待定'}</div>
+                    <div key={match.team_match_id} className={`p-3 sm:p-4 rounded-xl border transition-all ${
+                      isBye 
+                        ? 'bg-emerald-500/10 border-emerald-500/30' 
+                        : 'bg-slate-700/30 border-slate-600/30 hover:border-slate-500/50'
+                    }`}>
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div className="flex items-center gap-3 sm:gap-4">
+                          <div className="text-center min-w-[80px] sm:min-w-[100px]">
+                            <div className="font-medium text-slate-100 text-sm sm:text-base truncate">{match.team_a_name || '待定'}</div>
                           </div>
                           {isBye ? (
-                            <div className="text-green-600 font-medium text-sm">轮空自动晋级</div>
+                            <div className="text-emerald-400 font-medium text-xs sm:text-sm">✓ 轮空自动晋级</div>
                           ) : (
                             <>
-                              <div className="text-gray-400 font-bold">VS</div>
-                              <div className="text-center min-w-[100px]">
-                                <div className="font-medium">{match.team_b_name || '待定'}</div>
+                              <div className="text-slate-500 font-bold text-sm">VS</div>
+                              <div className="text-center min-w-[80px] sm:min-w-[100px]">
+                                <div className="font-medium text-slate-100 text-sm sm:text-base truncate">{match.team_b_name || '待定'}</div>
                               </div>
                             </>
                           )}
                           {match.winner_team_name && !isBye && (
-                            <div className="text-green-600 text-sm font-medium">
-                              🏆 胜者: {match.winner_team_name}
+                            <div className="text-amber-400 text-xs sm:text-sm font-medium">
+                              🏆 {match.winner_team_name}
                             </div>
                           )}
                         </div>
-                        <div className="flex items-center gap-4 flex-wrap">
+                        <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
                           {match.match_time && (
-                            <span className="text-sm text-gray-500">
-                              📅 {new Date(match.match_time).toLocaleString('zh-CN')}
+                            <span className="text-xs text-slate-400 bg-slate-700/50 px-2 py-1 rounded-lg">
+                              📅 {new Date(match.match_time).toLocaleString('zh-CN', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                             </span>
                           )}
                           {match.venue && (
-                            <span className="text-sm text-gray-500">📍 {match.venue}</span>
+                            <span className="text-xs text-slate-400 bg-slate-700/50 px-2 py-1 rounded-lg">📍 {match.venue}</span>
                           )}
                           <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusBadge(match.status)}`}>
                             {match.status}
                           </span>
                           {!isBye && (
-                            <div className="flex gap-2">
+                            <div className="flex gap-1">
                               <button
                                 onClick={() => handleEditMatch(match)}
-                                className="text-blue-600 hover:text-blue-800 text-sm"
+                                className="px-2 py-1 rounded-lg text-xs font-medium bg-slate-600/50 text-slate-300 hover:bg-slate-600 transition-colors"
                               >
                                 编辑
                               </button>
                               <button
-                                onClick={() => handleDelete(match.team_match_id)}
-                                className="text-red-600 hover:text-red-800 text-sm"
+                                onClick={() => handleDeleteClick(match)}
+                                className="px-2 py-1 rounded-lg text-xs font-medium bg-red-500/20 text-red-400 hover:bg-red-500/30 transition-colors"
                               >
                                 删除
                               </button>
@@ -335,14 +375,33 @@ function Schedule() {
       )}
 
       <div className="card">
-        <h3 className="text-lg font-semibold mb-4">对阵规则说明</h3>
-        <div className="text-sm text-gray-600 space-y-2">
-          <p>1. 采用淘汰赛制，每场团体赛包含5场单项比赛</p>
-          <p>2. 单项出场顺序：男子双打 → 女子单打 → 男子单打 → 女子双打 → 混合双打</p>
-          <p>3. 团体赛胜负判定：先赢得3场单项比赛的队伍获胜</p>
-          <p>4. 队伍数量为奇数时，自动处理轮空情况</p>
+        <h3 className="text-base sm:text-lg font-semibold text-slate-200 mb-3">📋 对阵规则说明</h3>
+        <div className="text-xs sm:text-sm text-slate-400 space-y-1.5">
+          <p>• 采用淘汰赛制，每场团体赛包含5场单项比赛</p>
+          <p>• 单项出场顺序：男双 → 女单 → 男单 → 女双 → 混双</p>
+          <p>• 团体赛胜负判定：先赢得3场单项比赛的队伍获胜</p>
+          <p>• 队伍数量为奇数时，自动处理轮空情况</p>
         </div>
       </div>
+
+      <ConfirmDialog
+        isOpen={deleteConfirm.isOpen}
+        title={
+          deleteConfirm.type === 'match' ? '删除比赛' :
+          deleteConfirm.type === 'clear' ? '清除对阵表' :
+          '重新生成对阵表'
+        }
+        message={
+          deleteConfirm.type === 'match' 
+            ? `确定要删除比赛"${deleteConfirm.name}"吗？删除后将同时删除该比赛的所有比分记录，此操作无法撤销。`
+            : deleteConfirm.type === 'clear'
+            ? '确定要清除所有对阵表吗？删除后将同时删除所有比赛记录和比分数据，此操作无法撤销。'
+            : '已存在对阵表，重新生成将清除现有对阵表和所有比赛数据，此操作无法撤销。'
+        }
+        confirmText={deleteConfirm.type === 'regenerate' ? '确认重新生成' : '确认删除'}
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => setDeleteConfirm({ isOpen: false, type: '', id: null, name: '' })}
+      />
     </div>
   )
 }

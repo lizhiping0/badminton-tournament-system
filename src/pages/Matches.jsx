@@ -313,11 +313,11 @@ function Matches() {
 
   const getStatusBadge = (status) => {
     const colors = {
-      '未开始': 'bg-gray-100 text-gray-800',
-      '进行中': 'bg-green-100 text-green-800',
-      '已结束': 'bg-blue-100 text-blue-800',
+      '未开始': 'bg-slate-500/20 text-slate-400 border border-slate-500/30',
+      '进行中': 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30',
+      '已结束': 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/30',
     }
-    return colors[status] || 'bg-gray-100 text-gray-800'
+    return colors[status] || 'bg-slate-500/20 text-slate-400 border border-slate-500/30'
   }
 
   const getRoundName = (round) => {
@@ -387,47 +387,55 @@ function Matches() {
 
   if (!currentEvent) {
     return (
-      <div className="card text-center py-12">
-        <p className="text-gray-500">请先选择或创建一个赛事</p>
+      <div className="card text-center py-12 animate-fade-in">
+        <div className="text-4xl mb-3">🏸</div>
+        <p className="text-slate-400">请先选择或创建一个赛事</p>
       </div>
     )
   }
 
   return (
-    <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-gray-800">比赛记录</h2>
+    <div className="space-y-4 sm:space-y-6 animate-fade-in">
+      <div>
+        <h2 className="text-xl sm:text-2xl font-bold text-slate-100">比赛记录</h2>
+        <p className="text-xs sm:text-sm text-slate-400 mt-1">录入和管理比赛比分</p>
+      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
         <div className="card lg:col-span-1">
-          <h3 className="text-lg font-semibold mb-4">团体赛列表</h3>
+          <h3 className="text-base sm:text-lg font-semibold text-slate-200 mb-4">团体赛列表</h3>
           {teamMatches.length === 0 ? (
-            <p className="text-gray-500 text-center py-4">暂无比赛，请先在赛程安排中生成对阵表</p>
+            <div className="text-center py-8">
+              <div className="text-4xl mb-3">📋</div>
+              <p className="text-slate-400 text-sm">暂无比赛</p>
+              <p className="text-xs text-slate-500 mt-1">请先在赛程安排中生成对阵表</p>
+            </div>
           ) : (
             <div className="space-y-2 max-h-[calc(100vh-300px)] overflow-y-auto">
               {teamMatches.map(match => (
                 <div
                   key={match.team_match_id}
-                  className={`p-3 rounded-lg border cursor-pointer transition-colors ${
+                  className={`p-3 rounded-xl border cursor-pointer transition-all ${
                     selectedMatch?.team_match_id === match.team_match_id
-                      ? 'border-blue-500 bg-blue-50'
-                      : 'border-gray-200 hover:border-blue-300'
+                      ? 'bg-indigo-500/10 border-indigo-500/30 ring-1 ring-indigo-500/20'
+                      : 'bg-slate-700/30 border-slate-600/30 hover:border-slate-500/50'
                   }`}
                   onClick={() => setSelectedMatch(match)}
                 >
-                  <div className="flex items-center justify-between">
-                    <div className="font-medium">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="font-medium text-slate-100 text-sm truncate flex-1">
                       {match.team_a_name} vs {match.team_b_name || '轮空'}
                     </div>
-                    <span className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded">
+                    <span className="text-xs text-slate-400 bg-slate-700/50 px-2 py-0.5 rounded shrink-0">
                       {getRoundName(match.round_number)}
                     </span>
                   </div>
-                  <div className="flex items-center gap-2 mt-1">
+                  <div className="flex items-center gap-2 mt-2">
                     <span className={`px-2 py-0.5 rounded text-xs ${getStatusBadge(match.status)}`}>
                       {match.status}
                     </span>
                     {match.winner_team_name && (
-                      <span className="text-green-600 text-xs">胜: {match.winner_team_name}</span>
+                      <span className="text-emerald-400 text-xs">🏆 {match.winner_team_name}</span>
                     )}
                   </div>
                 </div>
@@ -438,15 +446,15 @@ function Matches() {
 
         <div className="card lg:col-span-2">
           {saveMessage.text && (
-            <div className={`mb-4 p-3 rounded-lg ${saveMessage.type === 'success' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
+            <div className={`mb-4 p-3 rounded-lg ${saveMessage.type === 'success' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-red-500/20 text-red-400 border border-red-500/30'}`}>
               {saveMessage.type === 'success' ? '✓ ' : '✕ '}{saveMessage.text}
             </div>
           )}
           {selectedMatch ? (
             matchDetails ? (
               <div>
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+                  <h3 className="text-base sm:text-lg font-semibold text-slate-100">
                     {matchDetails.team_a_name} vs {matchDetails.team_b_name || '轮空'}
                   </h3>
                   <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusBadge(matchDetails.status)}`}>
@@ -456,7 +464,8 @@ function Matches() {
 
                 {matchDetails.team_b_id && matchDetails.matches?.length === 0 && (
                   <div className="text-center py-8">
-                    <p className="text-gray-500 mb-4">尚未创建单项比赛</p>
+                    <div className="text-4xl mb-3">🏸</div>
+                    <p className="text-slate-400 mb-4">尚未创建单项比赛</p>
                     <button onClick={handleCreateMatches} className="btn btn-primary">
                       创建5场单项比赛
                     </button>
@@ -464,24 +473,24 @@ function Matches() {
                 )}
 
                 {matchDetails.matches?.length > 0 && (
-                  <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200 mb-4">
-                    <h4 className="text-center text-sm text-gray-600 mb-3">实时比分</h4>
-                    <div className="flex items-center justify-center gap-8">
+                  <div className="p-4 rounded-xl bg-gradient-to-r from-indigo-500/10 to-purple-500/10 border border-indigo-500/20 mb-4">
+                    <h4 className="text-center text-xs sm:text-sm text-slate-400 mb-3">实时比分</h4>
+                    <div className="flex items-center justify-center gap-4 sm:gap-8">
                       <div className="text-center">
-                        <div className="text-lg font-bold text-blue-800">{matchDetails.team_a_name}</div>
-                        <div className="text-4xl font-bold text-blue-600 mt-1">
+                        <div className="text-sm sm:text-lg font-bold text-indigo-400 truncate max-w-[100px] sm:max-w-none">{matchDetails.team_a_name}</div>
+                        <div className="text-3xl sm:text-4xl font-bold text-indigo-300 mt-1">
                           {matchDetails.matches ? matchDetails.matches.filter(m => getMatchWinner(m) === 'A').length : 0}
                         </div>
                       </div>
-                      <div className="text-2xl text-gray-400 font-light">VS</div>
+                      <div className="text-xl sm:text-2xl text-slate-500 font-light">VS</div>
                       <div className="text-center">
-                        <div className="text-lg font-bold text-indigo-800">{matchDetails.team_b_name}</div>
-                        <div className="text-4xl font-bold text-indigo-600 mt-1">
+                        <div className="text-sm sm:text-lg font-bold text-purple-400 truncate max-w-[100px] sm:max-w-none">{matchDetails.team_b_name}</div>
+                        <div className="text-3xl sm:text-4xl font-bold text-purple-300 mt-1">
                           {matchDetails.matches ? matchDetails.matches.filter(m => getMatchWinner(m) === 'B').length : 0}
                         </div>
                       </div>
                     </div>
-                    <div className="mt-4 flex justify-center gap-4 text-sm">
+                    <div className="mt-4 flex justify-center gap-2 sm:gap-4 text-xs sm:text-sm flex-wrap">
                       {matchDetails.matches && matchDetails.matches.map((m, idx) => {
                         const winner = getMatchWinner(m)
                         const shortName = m.type_name?.includes('男子双打') ? '男双' 
@@ -492,7 +501,7 @@ function Matches() {
                           : m.type_name?.substring(0, 2)
                         return (
                           <div key={m.match_id} className="text-center">
-                            <div className={`px-3 py-1 rounded ${winner === 'A' ? 'bg-blue-200 text-blue-800' : winner === 'B' ? 'bg-indigo-200 text-indigo-800' : 'bg-gray-200 text-gray-600'}`}>
+                            <div className={`px-2 sm:px-3 py-1 rounded-lg ${winner === 'A' ? 'bg-indigo-500/30 text-indigo-300' : winner === 'B' ? 'bg-purple-500/30 text-purple-300' : 'bg-slate-600/50 text-slate-400'}`}>
                               {shortName}
                               {winner && (winner === 'A' ? ' ✓A' : ' ✓B')}
                             </div>
@@ -516,12 +525,12 @@ function Matches() {
                               setCurrentMatchIndex(index)
                               loadMatchScore(match)
                             }}
-                            className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
+                            className={`px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-medium whitespace-nowrap transition-all ${
                               currentMatchIndex === index
-                                ? 'bg-blue-600 text-white'
+                                ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-lg'
                                 : winner
-                                  ? 'bg-green-100 text-green-800'
-                                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                  ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                                  : 'bg-slate-700/50 text-slate-300 hover:bg-slate-700'
                             }`}
                           >
                             {index + 1}. {match.type_name}

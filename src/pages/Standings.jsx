@@ -143,22 +143,28 @@ function Standings() {
 
   if (!currentEvent) {
     return (
-      <div className="card text-center py-12">
-        <p className="text-gray-500">请先选择或创建一个赛事</p>
+      <div className="card text-center py-12 animate-fade-in">
+        <div className="text-4xl mb-3">📊</div>
+        <p className="text-slate-400">请先选择或创建一个赛事</p>
       </div>
     )
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 animate-fade-in">
       {message.text && (
-        <div className={`p-3 rounded-lg ${message.type === 'success' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
+        <div className={`p-3 rounded-lg ${message.type === 'success' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-red-500/20 text-red-400 border border-red-500/30'}`}>
           {message.type === 'success' ? '✓ ' : '✕ '}{message.text}
         </div>
       )}
-      <div className="flex items-center justify-between flex-wrap gap-2">
-        <h2 className="text-2xl font-bold text-gray-800">成绩统计</h2>
-        <div className="flex gap-2 flex-wrap">
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h2 className="text-xl sm:text-2xl font-bold text-slate-100">成绩统计</h2>
+            <p className="text-xs sm:text-sm text-slate-400 mt-1">查看比赛成绩和排名</p>
+          </div>
+        </div>
+        <div className="flex flex-wrap gap-2">
           <button
             onClick={handleCalculate}
             disabled={loading}
@@ -193,52 +199,53 @@ function Standings() {
       <div className="card">
         {standings.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-gray-500 mb-4">暂无成绩数据</p>
-            <p className="text-sm text-gray-400">请先完成比赛记录，然后点击"计算成绩"</p>
+            <div className="text-4xl mb-3">📊</div>
+            <p className="text-slate-400 mb-2">暂无成绩数据</p>
+            <p className="text-xs text-slate-500">请先完成比赛记录，然后点击"计算成绩"</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
+          <div className="overflow-x-auto -mx-4 sm:mx-0">
+            <table className="min-w-full divide-y divide-slate-700/50">
               <thead>
                 <tr>
-                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase bg-gray-50">排名</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase bg-gray-50">队伍</th>
-                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase bg-gray-50">积分</th>
-                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase bg-gray-50">胜场</th>
-                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase bg-gray-50">负场</th>
-                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase bg-gray-50">胜局</th>
-                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase bg-gray-50">负局</th>
-                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase bg-gray-50">净胜局</th>
-                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase bg-gray-50">得分</th>
-                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase bg-gray-50">失分</th>
-                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase bg-gray-50">净胜分</th>
+                  <th className="px-3 sm:px-4 py-3 text-center text-xs font-semibold text-slate-400 uppercase bg-slate-900/50">排名</th>
+                  <th className="px-3 sm:px-4 py-3 text-left text-xs font-semibold text-slate-400 uppercase bg-slate-900/50">队伍</th>
+                  <th className="px-3 sm:px-4 py-3 text-center text-xs font-semibold text-slate-400 uppercase bg-slate-900/50">积分</th>
+                  <th className="px-3 sm:px-4 py-3 text-center text-xs font-semibold text-slate-400 uppercase bg-slate-900/50 hidden sm:table-cell">胜场</th>
+                  <th className="px-3 sm:px-4 py-3 text-center text-xs font-semibold text-slate-400 uppercase bg-slate-900/50 hidden sm:table-cell">负场</th>
+                  <th className="px-3 sm:px-4 py-3 text-center text-xs font-semibold text-slate-400 uppercase bg-slate-900/50 hidden md:table-cell">胜局</th>
+                  <th className="px-3 sm:px-4 py-3 text-center text-xs font-semibold text-slate-400 uppercase bg-slate-900/50 hidden md:table-cell">负局</th>
+                  <th className="px-3 sm:px-4 py-3 text-center text-xs font-semibold text-slate-400 uppercase bg-slate-900/50 hidden sm:table-cell">净胜局</th>
+                  <th className="px-3 sm:px-4 py-3 text-center text-xs font-semibold text-slate-400 uppercase bg-slate-900/50 hidden lg:table-cell">得分</th>
+                  <th className="px-3 sm:px-4 py-3 text-center text-xs font-semibold text-slate-400 uppercase bg-slate-900/50 hidden lg:table-cell">失分</th>
+                  <th className="px-3 sm:px-4 py-3 text-center text-xs font-semibold text-slate-400 uppercase bg-slate-900/50">净胜分</th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="divide-y divide-slate-700/30">
                 {standings.map((s, index) => (
-                  <tr key={s.standing_id} className="hover:bg-gray-50">
-                    <td className="px-4 py-3 text-center">
-                      <span className={`inline-flex items-center justify-center w-8 h-8 rounded-full font-bold ${
-                        s.ranking === 1 ? 'bg-yellow-100 text-yellow-800' :
-                        s.ranking === 2 ? 'bg-gray-200 text-gray-800' :
-                        s.ranking === 3 ? 'bg-orange-100 text-orange-800' :
-                        'text-gray-600'
+                  <tr key={s.standing_id} className="hover:bg-slate-700/20 transition-colors">
+                    <td className="px-3 sm:px-4 py-3 text-center">
+                      <span className={`inline-flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full font-bold text-xs sm:text-sm ${
+                        s.ranking === 1 ? 'bg-gradient-to-br from-amber-400 to-yellow-500 text-slate-900 shadow-lg shadow-amber-500/20' :
+                        s.ranking === 2 ? 'bg-gradient-to-br from-slate-300 to-slate-400 text-slate-800' :
+                        s.ranking === 3 ? 'bg-gradient-to-br from-orange-400 to-amber-500 text-slate-800' :
+                        'bg-slate-700/50 text-slate-400'
                       }`}>
                         {s.ranking || index + 1}
                       </span>
                     </td>
-                    <td className="px-4 py-3 font-medium text-gray-900">{s.team_name}</td>
-                    <td className="px-4 py-3 text-center font-bold text-blue-600 text-lg">{s.total_points}</td>
-                    <td className="px-4 py-3 text-center text-green-600">{s.matches_won}</td>
-                    <td className="px-4 py-3 text-center text-red-600">{s.matches_lost}</td>
-                    <td className="px-4 py-3 text-center">{s.games_won}</td>
-                    <td className="px-4 py-3 text-center">{s.games_lost}</td>
-                    <td className={`px-4 py-3 text-center font-medium ${s.games_won - s.games_lost >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    <td className="px-3 sm:px-4 py-3 font-medium text-slate-100 text-sm sm:text-base">{s.team_name}</td>
+                    <td className="px-3 sm:px-4 py-3 text-center font-bold text-indigo-400 text-base sm:text-lg">{s.total_points}</td>
+                    <td className="px-3 sm:px-4 py-3 text-center text-emerald-400 text-sm hidden sm:table-cell">{s.matches_won}</td>
+                    <td className="px-3 sm:px-4 py-3 text-center text-red-400 text-sm hidden sm:table-cell">{s.matches_lost}</td>
+                    <td className="px-3 sm:px-4 py-3 text-center text-slate-300 text-sm hidden md:table-cell">{s.games_won}</td>
+                    <td className="px-3 sm:px-4 py-3 text-center text-slate-300 text-sm hidden md:table-cell">{s.games_lost}</td>
+                    <td className={`px-3 sm:px-4 py-3 text-center font-medium text-sm hidden sm:table-cell ${s.games_won - s.games_lost >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
                       {s.games_won - s.games_lost > 0 ? '+' : ''}{s.games_won - s.games_lost}
                     </td>
-                    <td className="px-4 py-3 text-center">{s.points_won}</td>
-                    <td className="px-4 py-3 text-center">{s.points_lost}</td>
-                    <td className={`px-4 py-3 text-center font-medium ${s.points_won - s.points_lost >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    <td className="px-3 sm:px-4 py-3 text-center text-slate-300 text-sm hidden lg:table-cell">{s.points_won}</td>
+                    <td className="px-3 sm:px-4 py-3 text-center text-slate-300 text-sm hidden lg:table-cell">{s.points_lost}</td>
+                    <td className={`px-3 sm:px-4 py-3 text-center font-medium text-sm ${s.points_won - s.points_lost >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
                       {s.points_won - s.points_lost > 0 ? '+' : ''}{s.points_won - s.points_lost}
                     </td>
                   </tr>
@@ -249,22 +256,24 @@ function Standings() {
         )}
       </div>
 
-      <div className="card">
-        <h3 className="text-lg font-semibold mb-4">排名规则说明</h3>
-        <div className="text-sm text-gray-600 space-y-2">
-          <p>1. 按积分高低排名，每场比赛胜者获得1个积分</p>
-          <p>2. 积分相同情况下，依次比较：胜负关系 → 净胜局数 → 净胜分数</p>
-          <p>3. 若仍相同，可进行附加赛或抽签决定</p>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+        <div className="card">
+          <h3 className="text-base sm:text-lg font-semibold text-slate-200 mb-3">📋 排名规则说明</h3>
+          <div className="text-xs sm:text-sm text-slate-400 space-y-1.5">
+            <p>• 按积分高低排名，每场比赛胜者获得1个积分</p>
+            <p>• 积分相同情况下，依次比较：胜负关系 → 净胜局数 → 净胜分数</p>
+            <p>• 若仍相同，可进行附加赛或抽签决定</p>
+          </div>
         </div>
-      </div>
 
-      <div className="card">
-        <h3 className="text-lg font-semibold mb-4">比赛规则说明</h3>
-        <div className="text-sm text-gray-600 space-y-2">
-          <p>1. 每场比赛采用三局两胜制，每局21分</p>
-          <p>2. 当比分达到20-20平时，需领先2分才能获胜，最高30分</p>
-          <p>3. 团体赛包含5场单项比赛，先赢得3场的队伍获胜</p>
-          <p>4. 单项出场顺序：男双 → 女单 → 男单 → 女双 → 混双</p>
+        <div className="card">
+          <h3 className="text-base sm:text-lg font-semibold text-slate-200 mb-3">🏸 比赛规则说明</h3>
+          <div className="text-xs sm:text-sm text-slate-400 space-y-1.5">
+            <p>• 每场比赛采用三局两胜制，每局21分</p>
+            <p>• 当比分达到20-20平时，需领先2分才能获胜，最高30分</p>
+            <p>• 团体赛包含5场单项比赛，先赢得3场的队伍获胜</p>
+            <p>• 单项出场顺序：男双 → 女单 → 男单 → 女双 → 混双</p>
+          </div>
         </div>
       </div>
     </div>
